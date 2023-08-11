@@ -37,7 +37,7 @@
     "grunt": "1.5.3",
     "grunt-eslint": "23.0.0",
     "load-grunt-tasks": "5.1.0",
-    "mocha": "8.4.0",
+    "mocha": "10.2.0",
     "should": "13.2.3"
   },
   "bugs": {

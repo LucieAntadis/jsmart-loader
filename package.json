@@ -35,7 +35,7 @@
     "eslint-plugin-promise": "6.1.1",
     "eslint-plugin-standard": "5.0.0",
     "grunt": "1.5.3",
-    "grunt-eslint": "23.0.0",
+    "grunt-eslint": "24.3.0",
     "load-grunt-tasks": "5.1.0",
     "mocha": "10.2.0",
     "should": "13.2.3"

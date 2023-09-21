@@ -121,6 +121,7 @@ function entry (source) {
   var leftDelim = '{'
   var rightDelim = '}'
   var autoLiteral = true
+  var dirname = ''
 
   if (this.cacheable) {
     this.cacheable()
@@ -136,6 +137,11 @@ function entry (source) {
 
   if (typeof query.autoLiteral !== 'undefined') {
     autoLiteral = query.autoLiteral
+  }
+
+  console.log(query)
+  if (query.dirname) {
+    dirname = query.dirname
   }
 
   var partialsList = findPartials(source, leftDelim, rightDelim, autoLiteral)

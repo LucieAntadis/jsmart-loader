@@ -64,7 +64,7 @@ function findUnloadedPartials (partialNames, loadedPartials) {
   })
 }
 
-function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiteral) {
+function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiteral, dirname) {
   var partials = {}
   if (unparsedPartials.length === 0) {
     return partials
@@ -75,10 +75,8 @@ function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiter
     if (!partial) {
       break
     }
-    console.log('---------------------')
-    console.log(partial)
-    console.log('---------------------')
-    var fullFilePath = path.resolve(partial)
+
+    var fullFilePath = path.resolve(dirname, partial)
     var partialData = handleFileSync(partial, fullFilePath, leftDelim, rightDelim, autoLiteral)
     partials[partialData.name] = partialData.data
     var consolidatedPartials = consolidatePartials([partialData])
@@ -154,12 +152,12 @@ function entry (source) {
       }
       partialStr += '  };'
 
-      var dataToSend = buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral)
+      var dataToSend = buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral, dirname),
 
       callback(null, dataToSend)
-    }, leftDelim, rightDelim, autoLiteral)
+    }, leftDelim, rightDelim, autoLiteral, dirname)
   } else {
-    var partialsData = loadAllPartialsSync(partialsList, leftDelim, rightDelim, autoLiteral)
+    var partialsData = loadAllPartialsSync(partialsList, leftDelim, rightDelim, autoLiteral, dirname)
 
     partialStr += 'smarty.prototype.getTemplate = function (name) {\n'
     for (var name in partialsData) {
@@ -169,11 +167,11 @@ function entry (source) {
     }
     partialStr += '  };'
 
-    return buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral)
+    return buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral, dirname)
   }
 }
 
-function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral) {
+function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral, dirname) {
   var secondOptions = []
   var t = 'var smarty = require("jsmart");\n' +
     '\n' + partial + '\n' +
@@ -193,6 +191,7 @@ function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral) {
     }
     secondOptions.push('autoLiteral: ' + autoLiteral)
   }
+  secondOptions.push('dirname: ' + "")
   var secondOptionsData = ''
   if (secondOptions.length) {
     secondOptionsData = ', {' + secondOptions.join(',') + '}'

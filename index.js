@@ -76,11 +76,8 @@ function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiter
       break
     }
 
-    console.log('---------------------')
-    console.log(partial)
-    console.log('---------------------')
-
     var fullFilePath = path.resolve(dirname, partial)
+    console.log(fullFilePath)
     var partialData = handleFileSync(partial, fullFilePath, leftDelim, rightDelim, autoLiteral)
     partials[partialData.name] = partialData.data
     var consolidatedPartials = consolidatePartials([partialData])
@@ -139,7 +136,6 @@ function entry (source) {
     autoLiteral = query.autoLiteral
   }
 
-  console.log(query)
   if (query.dirname) {
     dirname = query.dirname
   }
@@ -208,9 +204,6 @@ function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral, dirna
   if (secondOptions.length) {
     secondOptionsData = ', {' + secondOptions.join(',') + '}'
   }
-
-  console.log(secondOptions)
-  console.log(secondOptionsData)
 
   t += 'var comp = new smarty(' + JSON.stringify(source) + secondOptionsData + ');\n' +
     'return comp.fetch.apply(comp, arguments); };'

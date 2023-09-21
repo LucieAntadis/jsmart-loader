@@ -76,6 +76,10 @@ function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiter
       break
     }
 
+    console.log('---------------------')
+    console.log(partial)
+    console.log('---------------------')
+
     var fullFilePath = path.resolve(dirname, partial)
     var partialData = handleFileSync(partial, fullFilePath, leftDelim, rightDelim, autoLiteral)
     partials[partialData.name] = partialData.data
@@ -152,7 +156,7 @@ function entry (source) {
       }
       partialStr += '  };'
 
-      var dataToSend = buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral, dirname),
+      var dataToSend = buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral, dirname)
 
       callback(null, dataToSend)
     }, leftDelim, rightDelim, autoLiteral, dirname)
@@ -191,7 +195,7 @@ function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral, dirna
     }
     secondOptions.push('autoLiteral: ' + autoLiteral)
   }
-  secondOptions.push('dirname: ' + "")
+  secondOptions.push('dirname: ' + dirname)
   var secondOptionsData = ''
   if (secondOptions.length) {
     secondOptionsData = ', {' + secondOptions.join(',') + '}'

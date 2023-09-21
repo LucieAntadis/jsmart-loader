@@ -31,9 +31,9 @@ function loadFileSync (fullFilePath, callback) {
   return fs.readFileSync(fullFilePath, 'utf-8')
 }
 
-function handleFileSync (name, file, leftDelim, rightDelim, autoLiteral) {
+function handleFileSync (name, file, leftDelim, rightDelim, autoLiteral, dirname) {
   var fileData = loadFileSync(file)
-  var partials = findPartials(fileData, leftDelim, rightDelim, autoLiteral)
+  var partials = findPartials(fileData, leftDelim, rightDelim, autoLiteral, dirname)
   return {
     name: name,
     data: fileData,
@@ -41,13 +41,13 @@ function handleFileSync (name, file, leftDelim, rightDelim, autoLiteral) {
   }
 }
 
-function handleFile (name, file, callback, leftDelim, rightDelim, autoLiteral) {
+function handleFile (name, file, callback, leftDelim, rightDelim, autoLiteral, dirname) {
   loadFile(file, function (err, fileData) {
     if (err) {
       return callback(err)
     }
 
-    var partials = findPartials(fileData, leftDelim, rightDelim, autoLiteral)
+    var partials = findPartials(fileData, leftDelim, rightDelim, autoLiteral, dirname)
     var data = {
       name: name,
       data: fileData,
@@ -76,9 +76,12 @@ function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiter
       break
     }
 
+    console.log(dirname)
     var fullFilePath = path.resolve(dirname, partial)
+    console.log(partial)
+    console.log(path.resolve(partial))
     console.log(fullFilePath)
-    var partialData = handleFileSync(partial, fullFilePath, leftDelim, rightDelim, autoLiteral)
+    var partialData = handleFileSync(partial, fullFilePath, leftDelim, rightDelim, autoLiteral, dirname)
     partials[partialData.name] = partialData.data
     var consolidatedPartials = consolidatePartials([partialData])
     var partialsToLoad = findUnloadedPartials(consolidatedPartials, partials)
@@ -89,7 +92,7 @@ function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiter
   return partials
 }
 
-function loadAllPartials (unparsedPartials, partials, callback, leftDelim, rightDelim, autoLiteral) {
+function loadAllPartials (unparsedPartials, partials, callback, leftDelim, rightDelim, autoLiteral, dirname) {
   if (!partials) {
     partials = {}
   }
@@ -98,7 +101,7 @@ function loadAllPartials (unparsedPartials, partials, callback, leftDelim, right
   }
   async.map(unparsedPartials, function (partial, next) {
     var fullFilePath = path.resolve(partial)
-    return handleFile(partial, fullFilePath, next, leftDelim, rightDelim, autoLiteral)
+    return handleFile(partial, fullFilePath, next, leftDelim, rightDelim, autoLiteral, dirname)
   }, function (err, data) {
     if (err) {
       return callback(err)
@@ -109,7 +112,7 @@ function loadAllPartials (unparsedPartials, partials, callback, leftDelim, right
 
     var consolidatedPartials = consolidatePartials(data)
     var partialsToLoad = findUnloadedPartials(consolidatedPartials, partials)
-    return loadAllPartials(partialsToLoad, partials, callback, leftDelim, rightDelim, autoLiteral)
+    return loadAllPartials(partialsToLoad, partials, callback, leftDelim, rightDelim, autoLiteral, dirname)
   })
 }
 
@@ -118,7 +121,9 @@ function entry (source) {
   var leftDelim = '{'
   var rightDelim = '}'
   var autoLiteral = true
-  var dirname = ''
+  var sourceReplaceFrom = ""
+  var sourceReplaceTo = ""
+  var dirname = ""
 
   if (this.cacheable) {
     this.cacheable()
@@ -136,11 +141,19 @@ function entry (source) {
     autoLiteral = query.autoLiteral
   }
 
+  if (query.sourceReplaceFrom) {
+    sourceReplaceFrom = query.sourceReplaceFrom
+  }
+
+  if (query.sourceReplaceTo) {
+    sourceReplaceTo = query.sourceReplaceTo
+  }
+
   if (query.dirname) {
     dirname = query.dirname
   }
 
-  var partialsList = findPartials(source, leftDelim, rightDelim, autoLiteral)
+  var partialsList = findPartials(source, leftDelim, rightDelim, autoLiteral, dirname)
   var partialStr = ''
 
   if (this.async && query.async) {
@@ -158,7 +171,7 @@ function entry (source) {
       }
       partialStr += '  };'
 
-      var dataToSend = buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral, dirname)
+      var dataToSend = buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral, sourceReplaceFrom, sourceReplaceTo, dirname)
 
       callback(null, dataToSend)
     }, leftDelim, rightDelim, autoLiteral, dirname)
@@ -173,15 +186,15 @@ function entry (source) {
     }
     partialStr += '  };'
 
-    return buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral, dirname)
+    return buildOutput(partialStr, source, leftDelim, rightDelim, autoLiteral, sourceReplaceFrom, sourceReplaceTo, dirname)
   }
 }
 
-function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral, dirname) {
+function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral, sourceReplaceFrom, sourceReplaceTo, dirname) {
   var secondOptions = []
   var t = 'var smarty = require("jsmart");\n' +
     '\n' + partial + '\n' +
-      'module.exports = function() { '
+    'module.exports = function() { '
 
   if (leftDelim) {
     secondOptions.push('ldelim: \'' + leftDelim + '\'')
@@ -197,12 +210,18 @@ function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral, dirna
     }
     secondOptions.push('autoLiteral: ' + autoLiteral)
   }
+
   if (dirname) {
-    secondOptions.push('dirname: ' + dirname)
+    secondOptions.push('dirname: \'' + dirname + '\'')
   }
+
   var secondOptionsData = ''
   if (secondOptions.length) {
     secondOptionsData = ', {' + secondOptions.join(',') + '}'
+  }
+
+  if (sourceReplaceFrom && sourceReplaceTo) {
+    source.toString().replaceAll(sourceReplaceFrom, sourceReplaceTo)
   }
 
   t += 'var comp = new smarty(' + JSON.stringify(source) + secondOptionsData + ');\n' +

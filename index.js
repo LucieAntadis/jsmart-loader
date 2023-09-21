@@ -195,11 +195,16 @@ function buildOutput (partial, source, leftDelim, rightDelim, autoLiteral, dirna
     }
     secondOptions.push('autoLiteral: ' + autoLiteral)
   }
-  secondOptions.push('dirname: ' + dirname)
+  if (dirname) {
+    secondOptions.push('dirname: ' + dirname)
+  }
   var secondOptionsData = ''
   if (secondOptions.length) {
     secondOptionsData = ', {' + secondOptions.join(',') + '}'
   }
+
+  console.log(secondOptions)
+  console.log(secondOptionsData)
 
   t += 'var comp = new smarty(' + JSON.stringify(source) + secondOptionsData + ');\n' +
     'return comp.fetch.apply(comp, arguments); };'

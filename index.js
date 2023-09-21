@@ -75,6 +75,9 @@ function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiter
     if (!partial) {
       break
     }
+    console.log('---------------------')
+    console.log(partial)
+    console.log('---------------------')
     var fullFilePath = path.resolve(partial)
     var partialData = handleFileSync(partial, fullFilePath, leftDelim, rightDelim, autoLiteral)
     partials[partialData.name] = partialData.data

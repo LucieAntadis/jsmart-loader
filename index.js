@@ -76,11 +76,7 @@ function loadAllPartialsSync (unparsedPartials, leftDelim, rightDelim, autoLiter
       break
     }
 
-    console.log(dirname)
     var fullFilePath = path.resolve(dirname, partial)
-    console.log(partial)
-    console.log(path.resolve(partial))
-    console.log(fullFilePath)
     var partialData = handleFileSync(partial, fullFilePath, leftDelim, rightDelim, autoLiteral, dirname)
     partials[partialData.name] = partialData.data
     var consolidatedPartials = consolidatePartials([partialData])

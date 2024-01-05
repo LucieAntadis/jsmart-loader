@@ -113,7 +113,7 @@ function loadAllPartials (unparsedPartials, partials, callback, leftDelim, right
 }
 
 function entry (source) {
-  var query = loaderUtils.getOptions(this) || {}
+  const query = this.getOptions();
   var leftDelim = '{'
   var rightDelim = '}'
   var autoLiteral = true
